@@ -1,11 +1,12 @@
 :root {
-    --primary: #2563eb;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --bg-color: #f8fafc;
-    --card-bg: #ffffff;
-    --text-main: #1e293b;
-    --border: #e2e8f0;
+    /* Dark Mode Palette */
+    --primary: #3b82f6; 
+    --success: #22c55e;
+    --danger: #ef4444;
+    --bg-color: #0f172a;    /* Slate 900 */
+    --card-bg: #1e293b;     /* Slate 800 */
+    --text-main: #f8fafc;   /* Slate 50 */
+    --border: #334155;      /* Slate 700 */
 }
 
 body {
@@ -34,7 +35,7 @@ header {
     background: var(--card-bg);
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 20px;
     border: 1px solid var(--border);
 }
@@ -51,7 +52,7 @@ header {
     padding: 20px;
     border-radius: 10px;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     border: 1px solid var(--border);
 }
 
@@ -89,6 +90,9 @@ input[type="number"] {
     border: 1px solid var(--border);
     border-radius: 5px;
     width: 100%;
+    /* 수정 1: 하드코딩 제거 및 CSS 변수 사용 */
+    background-color: var(--bg-color);
+    color: var(--text-main);
 }
 
 button {
@@ -107,28 +111,18 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .buy-btn { background: var(--success); color: white; }
 .sell-btn { background: var(--danger); color: white; }
 
-/* 자동 진행 버튼 */
 .auto-play-btn {
-    background: #7c3aed;
+    background: #8b5cf6; /* Violet 500 */
     color: white;
     width: 100%;
-    font-size: 1rem;
-    padding: 12px;
+    font-size: 1.2rem;
+    padding: 15px;
     margin-top: 10px;
     transition: background 0.2s, opacity 0.2s;
 }
 
 .auto-play-btn.active {
-    background: #b45309; /* 일시정지 상태 → 주황 */
-}
-
-.next-btn { 
-    background: #475569; 
-    color: white; 
-    width: 100%; 
-    font-size: 1.2rem; 
-    padding: 15px; 
-    margin-top: 10px;
+    background: #f59e0b; /* Amber 500 */
 }
 
 .toggle-group {
@@ -141,10 +135,9 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
 .toggle-group small {
-    color: #64748b;
+    color: #94a3b8; /* Slate 400 */
 }
 
-/* 프로그레스바 */
 #progress-container {
     margin-top: 10px;
 }
@@ -160,7 +153,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .progress-fill {
     height: 100%;
     width: 0%;
-    background: #7c3aed;
+    background: #8b5cf6;
     border-radius: 5px;
     transition: width 0.1s linear;
 }
@@ -168,11 +161,10 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .progress-label {
     text-align: center;
     font-size: 0.8rem;
-    color: #64748b;
-    margin-top: 4px;
+    color: #94a3b8;
+    margin-top: 6px;
 }
 
-/* Chart.js 렌더링 깨짐 방지 */
 .chart-panel {
     position: relative;
     height: 400px;

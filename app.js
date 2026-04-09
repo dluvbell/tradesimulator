@@ -1,5 +1,9 @@
 const marketData = [114, 133, 92, 59, 77, 97, 105, 117, 151, 202, 195, 232, 278, 247, 324, 348, 330, 381, 454, 373, 586, 676, 776, 751, 1052, 1291, 1570, 2192, 4069, 2470, 1950, 1335, 2003, 2178, 2205, 2415, 2652, 1577, 2269, 2652, 2605, 3019, 4176, 4736, 5007, 5383, 6903, 6635, 8972, 12888, 15644, 10466, 15011, 16000, 17500, 18200, 19500, 21000, 20500, 22500];
 
+// Chart.js Dark Mode Defaults
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#334155';
+
 class MarketSimulator {
     constructor(initialCash) {
         this.currentYearIndex = 0;
@@ -35,7 +39,7 @@ class MarketSimulator {
             this.averageCost = totalInvested / this.shares;
             return true;
         }
-        alert("현금이 부족합니다.");
+        alert("Not enough cash.");
         return false;
     }
 
@@ -61,7 +65,7 @@ class MarketSimulator {
             if (this.shares === 0) this.averageCost = 0;
             return true;
         }
-        alert("보유 주식이 부족합니다.");
+        alert("Not enough shares.");
         return false;
     }
 
@@ -91,16 +95,14 @@ class MarketSimulator {
     }
 }
 
-// --- UI 제어 로직 ---
 let sim = null;
 let assetChart = null;
 
-// --- 자동 진행 관련 변수 ---
-const YEAR_DURATION_MS = 20000;   // 1년 = 20초
-const TICK_INTERVAL_MS = 100;     // 프로그레스바 업데이트 주기
+const YEAR_DURATION_MS = 20000;
+const TICK_INTERVAL_MS = 100;
 let autoPlayActive = false;
-let autoPlayTickInterval = null;  // 프로그레스바용 tick 타이머
-let autoPlayElapsed = 0;          // 현재 연도에서 경과한 ms
+let autoPlayTickInterval = null;
+let autoPlayElapsed = 0;
 
 const formatMoney = (num) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
 
@@ -109,12 +111,12 @@ function updateUI() {
     document.getElementById('display-price').innerText = formatMoney(sim.getCurrentPrice());
     document.getElementById('display-total').innerText = formatMoney(sim.getTotalValue());
     document.getElementById('display-cash').innerText = formatMoney(sim.cash);
-    document.getElementById('display-shares').innerText = `${sim.shares} 주`;
+    document.getElementById('display-shares').innerText = `${sim.shares}`;
     document.getElementById('display-avg-cost').innerText = formatMoney(sim.averageCost);
     
     const realizedEl = document.getElementById('display-realized');
     realizedEl.innerText = formatMoney(sim.realizedGainLoss);
-    realizedEl.style.color = sim.realizedGainLoss >= 0 ? 'green' : 'red';
+    realizedEl.style.color = sim.realizedGainLoss >= 0 ? '#22c55e' : '#ef4444';
 
     updateChart();
 }
@@ -126,10 +128,10 @@ function initChart() {
         data: {
             labels: sim.history.map(h => `Year ${h.year}`),
             datasets: [{
-                label: '총 자산 가치 ($)',
+                label: 'Total Asset Value ($)',
                 data: sim.history.map(h => h.totalValue),
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 fill: true,
                 tension: 0.1
             }]
@@ -148,36 +150,35 @@ function updateChart() {
     assetChart.update();
 }
 
-// --- 자동 진행 함수 ---
 function startAutoPlay() {
     if (autoPlayActive) return;
     autoPlayActive = true;
     autoPlayElapsed = 0;
 
-    document.getElementById('btn-auto-play').textContent = '⏸ 일시정지';
+    document.getElementById('btn-auto-play').textContent = '⏸ Pause';
     document.getElementById('btn-auto-play').classList.add('active');
-    document.getElementById('progress-container').classList.remove('hidden');
+    
+    const progressContainer = document.getElementById('progress-container');
+    const progressTrack = document.querySelector('.progress-track');
+    
+    progressContainer.classList.remove('hidden');
+    progressTrack.classList.remove('hidden'); // 다시 시작할 때 트랙 복구
 
     autoPlayTickInterval = setInterval(() => {
         autoPlayElapsed += TICK_INTERVAL_MS;
 
-        // 프로그레스바 업데이트
         const pct = Math.min((autoPlayElapsed / YEAR_DURATION_MS) * 100, 100);
         document.getElementById('progress-bar').style.width = pct + '%';
 
-        // 남은 시간 표시
         const remaining = Math.max(0, Math.ceil((YEAR_DURATION_MS - autoPlayElapsed) / 1000));
-        document.getElementById('progress-label').textContent =
-            `다음 연도까지 ${remaining}초`;
+        document.getElementById('progress-label').textContent = `${remaining} seconds until next year`;
 
-        // 20초 경과 → 연도 진행
         if (autoPlayElapsed >= YEAR_DURATION_MS) {
             autoPlayElapsed = 0;
             const advanced = sim.nextYear();
             updateUI();
 
             if (!advanced) {
-                // 60년 도달 → 자동 종료
                 stopAutoPlay(true);
             }
         }
@@ -189,31 +190,24 @@ function stopAutoPlay(ended = false) {
     clearInterval(autoPlayTickInterval);
     autoPlayTickInterval = null;
 
-    document.getElementById('btn-auto-play').textContent = '▶▶ 자동 진행 시작';
+    document.getElementById('btn-auto-play').textContent = '▶▶ Start Auto-Play';
     document.getElementById('btn-auto-play').classList.remove('active');
     document.getElementById('progress-bar').style.width = '0%';
 
     if (ended) {
-        document.getElementById('progress-label').textContent = '시뮬레이션 종료 (60년 도달)';
+        // 수정 2: 60년 도달 시 진행률 빈 막대(track)는 숨기고 텍스트만 표시
+        document.querySelector('.progress-track').classList.add('hidden');
+        document.getElementById('progress-label').textContent = 'Simulation Ended (Reached 60 Years)';
         document.getElementById('btn-auto-play').disabled = true;
-        document.getElementById('btn-next-year').disabled = true;
     } else {
         document.getElementById('progress-container').classList.add('hidden');
     }
 }
 
-function resetAutoPlayTimer() {
-    // 수동 Next Year 클릭 시 타이머 리셋
-    if (autoPlayActive) {
-        autoPlayElapsed = 0;
-    }
-}
-
-// --- 이벤트 리스너 ---
 document.getElementById('btn-start').addEventListener('click', () => {
     const initialCash = parseFloat(document.getElementById('initial-cash').value);
     if (isNaN(initialCash) || initialCash <= 0) {
-        alert("올바른 초기 자본금을 입력하세요.");
+        alert("Please enter a valid initial capital.");
         return;
     }
 
@@ -229,7 +223,7 @@ document.getElementById('btn-start').addEventListener('click', () => {
 document.getElementById('btn-buy').addEventListener('click', () => {
     const qty = parseInt(document.getElementById('trade-qty').value);
     if (isNaN(qty) || qty <= 0) {
-        alert("올바른 수량을 입력하세요.");
+        alert("Please enter a valid quantity.");
         return;
     }
     if (sim.buy(qty)) updateUI();
@@ -238,21 +232,10 @@ document.getElementById('btn-buy').addEventListener('click', () => {
 document.getElementById('btn-sell').addEventListener('click', () => {
     const qty = parseInt(document.getElementById('trade-qty').value);
     if (isNaN(qty) || qty <= 0) {
-        alert("올바른 수량을 입력하세요.");
+        alert("Please enter a valid quantity.");
         return;
     }
     if (sim.sell(qty)) updateUI();
-});
-
-document.getElementById('btn-next-year').addEventListener('click', () => {
-    resetAutoPlayTimer();
-    const advanced = sim.nextYear();
-    if (advanced) {
-        updateUI();
-    } else {
-        stopAutoPlay(true);
-        alert("시뮬레이션이 종료되었습니다 (60년 도달).");
-    }
 });
 
 document.getElementById('btn-auto-play').addEventListener('click', () => {

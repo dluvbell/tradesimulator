@@ -1,40 +1,40 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주식 시장 투자 시뮬레이션</title>
+    <title>Stock Market Investment Simulation</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📈 자산 관리 시뮬레이션</h1>
-            <p>60년간의 시장에서 당신의 투자 전략을 테스트해보세요.</p>
+            <h1>📈 Wealth Management Simulation</h1>
+            <p>Test your investment strategy in a 60-year market.</p>
         </header>
 
         <div id="setup-screen" class="card">
-            <h2>시뮬레이션 시작하기</h2>
+            <h2>Start Simulation</h2>
             <div class="input-group">
-                <label for="initial-cash">초기 자본금 ($):</label>
+                <label for="initial-cash">Initial Capital ($):</label>
                 <input type="number" id="initial-cash" value="10000" min="1000">
             </div>
-            <button id="btn-start" class="primary-btn">시작하기</button>
+            <button id="btn-start" class="primary-btn">Start</button>
         </div>
 
         <div id="dashboard-screen" class="hidden">
             <div class="top-dashboard">
                 <div class="stat-card highlight">
-                    <h3>현재 연도</h3>
+                    <h3>Current Year</h3>
                     <div id="display-year" class="stat-value">Year 1</div>
                 </div>
                 <div class="stat-card">
-                    <h3>현재 주가</h3>
+                    <h3>Current Price</h3>
                     <div id="display-price" class="stat-value">$0</div>
                 </div>
                 <div class="stat-card">
-                    <h3>총 자산 가치</h3>
+                    <h3>Total Asset Value</h3>
                     <div id="display-total" class="stat-value">$0</div>
                 </div>
             </div>
@@ -42,53 +42,49 @@
             <div class="main-content">
                 <div class="control-panel">
                     <div class="card account-info">
-                        <h3>내 계좌 현황</h3>
-                        <p>보유 현금: <strong id="display-cash">$0</strong></p>
-                        <p>보유 주식: <strong id="display-shares">0 주</strong></p>
-                        <p>평균 단가: <strong id="display-avg-cost">$0.00</strong></p>
-                        <p>누적 실현 손익: <strong id="display-realized">$0.00</strong></p>
+                        <h3>Account Status</h3>
+                        <p>Cash: <strong id="display-cash">$0</strong></p>
+                        <p>Shares: <strong id="display-shares">0</strong></p>
+                        <p>Average Cost: <strong id="display-avg-cost">$0.00</strong></p>
+                        <p>Realized PnL: <strong id="display-realized">$0.00</strong></p>
                     </div>
 
                     <div class="card trade-controls">
-                        <h3>수동 거래 (수수료 $10/건)</h3>
+                        <h3>Manual Trading ($10 Fee)</h3>
                         <div class="input-row">
-                            <input type="number" id="trade-qty" placeholder="주식 수" min="1">
-                            <button id="btn-buy" class="buy-btn">매수</button>
-                            <button id="btn-sell" class="sell-btn">매도</button>
+                            <input type="number" id="trade-qty" placeholder="Quantity" min="1">
+                            <button id="btn-buy" class="buy-btn">Buy</button>
+                            <button id="btn-sell" class="sell-btn">Sell</button>
                         </div>
                     </div>
 
                     <div class="card auto-controls">
-                        <h3>자동화 전략 설정</h3>
+                        <h3>Automated Strategy</h3>
                         <div class="toggle-group">
                             <label>
                                 <input type="checkbox" id="toggle-dca"> 
-                                <strong>매년 자동 매수 (DCA)</strong>
+                                <strong>Annual Auto-Buy (DCA)</strong>
                             </label>
-                            <input type="number" id="input-dca-amount" placeholder="매수 금액($)" disabled>
+                            <input type="number" id="input-dca-amount" placeholder="Amount ($)" disabled>
                         </div>
                         <div class="toggle-group">
                             <label>
                                 <input type="checkbox" id="toggle-savings"> 
-                                <strong>매년 추가 저축 (근로 소득)</strong>
+                                <strong>Annual Savings (Income)</strong>
                             </label>
-                            <input type="number" id="input-savings-amount" placeholder="저축 금액($)" disabled>
-                            <small class="note">* 켜는 순간부터 매 턴마다 현금이 추가됩니다.</small>
+                            <input type="number" id="input-savings-amount" placeholder="Amount ($)" disabled>
+                            <small class="note">* Cash is added every turn once enabled.</small>
                         </div>
                     </div>
 
-                    <!-- 자동 진행 버튼 -->
-                    <button id="btn-auto-play" class="auto-play-btn">▶▶ 자동 진행 시작</button>
+                    <button id="btn-auto-play" class="auto-play-btn">▶▶ Start Auto-Play</button>
 
-                    <!-- 프로그레스바 (자동 진행 중에만 표시) -->
                     <div id="progress-container" class="hidden">
                         <div class="progress-track">
                             <div id="progress-bar" class="progress-fill"></div>
                         </div>
-                        <div id="progress-label" class="progress-label">다음 연도까지 20초</div>
+                        <div id="progress-label" class="progress-label">20 seconds until next year</div>
                     </div>
-
-                    <button id="btn-next-year" class="next-btn">▶ 1년 진행 (Next Turn)</button>
                 </div>
 
                 <div class="chart-panel card">

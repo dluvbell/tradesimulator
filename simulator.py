@@ -54,14 +54,12 @@ class MarketSimulator:
             
             tax = gross_gain * 0.15 if gross_gain > 0 else 0
                 
-            # 엣지 케이스 방어 로직 적용
             raw_proceeds = proceeds_before_fee - 10 - tax
             total_proceeds = max(0, raw_proceeds)
             
             self.cash += total_proceeds
             self.shares -= shares_to_sell
             
-            # 실현 손익 기록
             net_gain_after_fee_and_tax = gross_gain - 10 - tax
             self.realized_gain_loss += net_gain_after_fee_and_tax
             
