@@ -11,12 +11,13 @@ class MarketSimulator:
         self.average_cost = 0.0
         self.realized_gain_loss = 0.0
         
+        self.tax_rate = 0.15
+        self.trading_fee = 10.0
+        
         self.auto_dca_active = False
         self.auto_dca_amount = 0.0
         
-        self.savings_active = False
-        self.savings_amount = 0.0
-        self.history = [{"year": 1, "total_value": initial_cash}]
+        self.history = [{"year": 1, "total_value": initial_cash, "price": MARKET_DATA[0]}]
 
     def get_current_price(self):
         return self.market_data[self.current_year_index]
@@ -24,17 +25,19 @@ class MarketSimulator:
     def get_total_value(self):
         return self.cash + (self.shares * self.get_current_price())
         
+    def set_tax_rate(self, rate_percent):
+        self.tax_rate = rate_percent / 100.0
+        
+    def set_trading_fee(self, fee):
+        self.trading_fee = float(fee)
+
     def set_dca(self, active, amount):
         self.auto_dca_active = active
         self.auto_dca_amount = amount
 
-    def set_savings(self, active, amount):
-        self.savings_active = active
-        self.savings_amount = amount
-
     def buy(self, shares_to_buy):
         price = self.get_current_price()
-        total_cost = (shares_to_buy * price) + 10 
+        total_cost = (shares_to_buy * price) + self.trading_fee 
 
         if self.cash >= total_cost and shares_to_buy > 0:
             self.cash -= total_cost
@@ -52,15 +55,15 @@ class MarketSimulator:
             cost_basis = shares_to_sell * self.average_cost
             gross_gain = proceeds_before_fee - cost_basis
             
-            tax = gross_gain * 0.15 if gross_gain > 0 else 0
+            tax = gross_gain * self.tax_rate if gross_gain > 0 else 0
                 
-            raw_proceeds = proceeds_before_fee - 10 - tax
+            raw_proceeds = proceeds_before_fee - self.trading_fee - tax
             total_proceeds = max(0, raw_proceeds)
             
             self.cash += total_proceeds
             self.shares -= shares_to_sell
             
-            net_gain_after_fee_and_tax = gross_gain - 10 - tax
+            net_gain_after_fee_and_tax = total_proceeds - cost_basis
             self.realized_gain_loss += net_gain_after_fee_and_tax
             
             if self.shares == 0:
@@ -72,22 +75,23 @@ class MarketSimulator:
         if self.current_year_index >= len(self.market_data) - 1:
             return False
 
-        cash_before_savings = self.cash
-
-        if self.savings_active:
-            self.cash += self.savings_amount
-
-        if self.auto_dca_active and self.auto_dca_amount > 10 and cash_before_savings > 10:
-            price = self.get_current_price()
-            available_to_invest = min(self.auto_dca_amount, cash_before_savings)
-            shares_to_auto_buy = math.floor((available_to_invest - 10) / price)
+        if self.auto_dca_active and self.auto_dca_amount > 0:
+            self.cash += self.auto_dca_amount
+            available_to_invest = self.auto_dca_amount
             
-            if shares_to_auto_buy > 0:
-                self.buy(shares_to_auto_buy)
+            if available_to_invest > self.trading_fee:
+                price = self.get_current_price()
+                shares_to_auto_buy = math.floor((available_to_invest - self.trading_fee) / price)
+                if shares_to_auto_buy > 0:
+                    self.buy(shares_to_auto_buy)
 
+        # 마지막 수정: 오프셋 방지를 위해 증가 전 미리 다음 연도 가격을 저장
+        next_price = self.market_data[self.current_year_index + 1]
+        
         self.current_year_index += 1
         self.history.append({
             "year": self.current_year_index + 1,
-            "total_value": self.get_total_value()
+            "total_value": self.get_total_value(),
+            "price": next_price
         })
         return True
