@@ -1,4 +1,12 @@
-const marketData = [114, 133, 92, 59, 77, 97, 105, 117, 151, 202, 195, 232, 278, 247, 324, 348, 330, 381, 454, 373, 586, 676, 776, 751, 1052, 1291, 1570, 2192, 4069, 2470, 1950, 1335, 2003, 2178, 2205, 2415, 2652, 1577, 2269, 2652, 2605, 3019, 4176, 4736, 5007, 5383, 6903, 6635, 8972, 12888, 15644, 10466, 15011, 16000, 17500, 18200, 19500, 21000, 20500, 22500];
+const sp500Data = [84, 92, 80, 96, 103, 92, 98, 102, 118, 97, 68, 90, 107, 95, 96, 107, 135, 122, 140, 164, 167, 211, 242, 247, 277, 353, 417, 435, 466, 459, 615, 740, 970, 1229, 1469, 1320, 1148, 879, 1111, 1211, 1248, 1418, 1468, 903, 1115, 1257, 1257, 1426, 1848, 2058, 2043, 2238, 2673, 2506, 3230, 3756, 4766, 3839, 4769, 5200];
+const marketData = [100.00];
+
+for (let i = 1; i < sp500Data.length; i++) {
+    const pctChange = (sp500Data[i] - sp500Data[i-1]) / sp500Data[i-1];
+    let nextPrice = marketData[i-1] * (1 + 3 * pctChange);
+    if (nextPrice <= 0) nextPrice = 0;
+    marketData.push(nextPrice);
+}
 
 Chart.defaults.color = '#94a3b8';
 Chart.defaults.borderColor = '#334155';
@@ -14,9 +22,14 @@ class MarketSimulator {
         this.taxRate = 0.15;
         this.tradingFee = 10;
 
+        this.savingsActive = false;
+        this.savingsAmount = 0;
+
         this.autoDcaActive = false;
         this.autoDcaAmount = 0;
         
+        this.isFailed = false; 
+
         this.history = [{
             year: 1,
             totalValue: initialCash,
@@ -32,6 +45,8 @@ class MarketSimulator {
     setTradingFee(fee) { this.tradingFee = fee; }
 
     buy(sharesToBuy) {
+        if (this.isFailed) return false;
+
         const price = this.getCurrentPrice();
         const totalCost = (sharesToBuy * price) + this.tradingFee;
 
@@ -47,6 +62,8 @@ class MarketSimulator {
     }
 
     sell(sharesToSell) {
+        if (this.isFailed) return false;
+
         const price = this.getCurrentPrice();
         if (this.shares >= sharesToSell && sharesToSell > 0) {
             const proceedsBeforeFee = sharesToSell * price;
@@ -73,15 +90,19 @@ class MarketSimulator {
     }
 
     nextYear() {
-        if (this.currentYearIndex >= marketData.length - 1) {
+        if (this.currentYearIndex >= marketData.length - 1 || this.isFailed) {
             return false;
         }
 
+        if (this.savingsActive && this.savingsAmount > 0) {
+            this.cash += this.savingsAmount;
+        }
+
         if (this.autoDcaActive && this.autoDcaAmount > 0) {
-            this.cash += this.autoDcaAmount; 
-            const availableToInvest = this.autoDcaAmount;
+            const dcaCap = Math.min(this.autoDcaAmount, this.savingsAmount);
+            const availableToInvest = Math.min(dcaCap, this.cash);
             
-            if (availableToInvest > this.tradingFee) {
+            if (availableToInvest > this.tradingFee && this.getCurrentPrice() > 0) {
                 const sharesToAutoBuy = Math.floor((availableToInvest - this.tradingFee) / this.getCurrentPrice());
                 if (sharesToAutoBuy > 0) { 
                     this.buy(sharesToAutoBuy); 
@@ -89,7 +110,6 @@ class MarketSimulator {
             }
         }
 
-        // 마지막 수정: 오프셋 방지를 위해 증가 전 미리 다음 연도 가격을 저장
         const nextPrice = marketData[this.currentYearIndex + 1];
         
         this.currentYearIndex++;
@@ -98,6 +118,12 @@ class MarketSimulator {
             totalValue: this.getTotalValue(),
             price: nextPrice
         });
+
+        if (nextPrice <= 0) {
+            this.isFailed = true;
+            return false;
+        }
+
         return true;
     }
 }
@@ -126,7 +152,10 @@ function updateUI() {
     realizedEl.innerText = formatMoney(sim.realizedGainLoss);
     realizedEl.style.color = sim.realizedGainLoss >= 0 ? '#22c55e' : '#ef4444';
 
-    const maxShares = Math.max(0, Math.floor((sim.cash - sim.tradingFee) / sim.getCurrentPrice()));
+    let maxShares = 0;
+    if (sim.getCurrentPrice() > 0) {
+        maxShares = Math.max(0, Math.floor((sim.cash - sim.tradingFee) / sim.getCurrentPrice()));
+    }
     document.getElementById('display-max-shares').innerText = maxShares;
 
     updateChart();
@@ -222,13 +251,14 @@ function startAutoPlay() {
             updateUI();
 
             if (!advanced) {
-                stopAutoPlay(true);
+                const isFinished = sim.currentYearIndex >= marketData.length - 1;
+                stopAutoPlay(isFinished, sim.isFailed);
             }
         }
     }, TICK_INTERVAL_MS);
 }
 
-function stopAutoPlay(ended = false) {
+function stopAutoPlay(ended = false, failed = false) {
     autoPlayActive = false;
     clearInterval(autoPlayTickInterval);
     autoPlayTickInterval = null;
@@ -241,11 +271,22 @@ function stopAutoPlay(ended = false) {
     
     document.getElementById('progress-bar').style.width = '0%';
 
-    if (ended) {
+    if (failed) {
+        btn.classList.add('hidden');
+        document.querySelector('.progress-track').classList.add('hidden');
+        document.getElementById('progress-label').textContent = 'Simulation Failed (Fund Wiped Out)';
+        
+        document.getElementById('btn-buy').disabled = true;
+        document.getElementById('btn-sell').disabled = true;
+        document.getElementById('fail-message').classList.remove('hidden');
+        document.getElementById('btn-restart').classList.remove('hidden');
+    } else if (ended) {
         btn.classList.add('hidden');
         document.querySelector('.progress-track').classList.add('hidden');
         document.getElementById('progress-label').textContent = 'Simulation Ended (Reached 60 Years)';
         
+        document.getElementById('btn-buy').disabled = true;
+        document.getElementById('btn-sell').disabled = true;
         document.getElementById('btn-restart').classList.remove('hidden');
     } else {
         document.getElementById('progress-container').classList.add('hidden');
@@ -257,17 +298,27 @@ document.getElementById('btn-restart').addEventListener('click', () => {
     document.getElementById('setup-screen').classList.remove('hidden');
     document.getElementById('btn-restart').classList.add('hidden');
     document.getElementById('progress-container').classList.add('hidden');
+    document.getElementById('fail-message').classList.add('hidden');
     
     const autoPlayBtn = document.getElementById('btn-auto-play');
     autoPlayBtn.classList.remove('hidden');
     
     document.getElementById('input-tax-rate').disabled = false;
     document.getElementById('input-trading-fee').disabled = false;
+    document.getElementById('btn-buy').disabled = false;
+    document.getElementById('btn-sell').disabled = false;
     document.getElementById('progress-bar').style.width = '0%';
     
-    document.getElementById('toggle-dca').checked = false;
+    document.getElementById('toggle-savings').checked = false;
+    document.getElementById('input-savings-amount').value = '';
+    document.getElementById('input-savings-amount').disabled = true;
+    
+    const dcaToggle = document.getElementById('toggle-dca');
+    dcaToggle.checked = false;
+    dcaToggle.disabled = true; 
     document.getElementById('input-dca-amount').value = '';
     document.getElementById('input-dca-amount').disabled = true;
+
     document.getElementById('progress-label').textContent = '20 seconds until next year';
 
     if (assetChart) assetChart.destroy();
@@ -326,6 +377,50 @@ document.getElementById('btn-auto-play').addEventListener('click', () => {
     }
 });
 
+document.getElementById('toggle-savings').addEventListener('change', (e) => {
+    const isActive = e.target.checked;
+    const savingsInput = document.getElementById('input-savings-amount');
+    savingsInput.disabled = !isActive;
+    if (sim) sim.savingsActive = isActive;
+    
+    const dcaToggle = document.getElementById('toggle-dca');
+    const dcaInput = document.getElementById('input-dca-amount');
+    
+    if (!isActive) {
+        dcaToggle.checked = false;
+        dcaToggle.disabled = true;
+        dcaInput.value = '';
+        dcaInput.disabled = true;
+        if (sim) {
+            sim.autoDcaActive = false;
+            sim.autoDcaAmount = 0;
+        }
+    } else {
+        dcaToggle.disabled = false; 
+    }
+});
+
+document.getElementById('input-savings-amount').addEventListener('input', (e) => {
+    let val = parseFloat(e.target.value) || 0;
+    if (sim) {
+        sim.savingsAmount = val;
+        if (sim.autoDcaAmount > val) {
+            sim.autoDcaAmount = val;
+            // 0일 경우 빈칸으로 표시하여 UX 통일
+            document.getElementById('input-dca-amount').value = val === 0 ? '' : val;
+        }
+
+        // 최종 반영: Savings가 0(또는 빈칸)이 되었을 때 DCA 켜져있으면 강제 종료 및 UI 리셋
+        if (val === 0 && sim.autoDcaActive) {
+            document.getElementById('toggle-dca').checked = false;
+            document.getElementById('input-dca-amount').disabled = true;
+            document.getElementById('input-dca-amount').value = '';
+            sim.autoDcaActive = false;
+            sim.autoDcaAmount = 0;
+        }
+    }
+});
+
 document.getElementById('toggle-dca').addEventListener('change', (e) => {
     const input = document.getElementById('input-dca-amount');
     input.disabled = !e.target.checked;
@@ -333,7 +428,14 @@ document.getElementById('toggle-dca').addEventListener('change', (e) => {
 });
 
 document.getElementById('input-dca-amount').addEventListener('input', (e) => {
-    if (sim) sim.autoDcaAmount = parseFloat(e.target.value) || 0;
+    let val = parseFloat(e.target.value) || 0;
+    if (sim) {
+        const capped = Math.min(val, sim.savingsAmount);
+        sim.autoDcaAmount = capped;
+        if (val !== capped) {
+            e.target.value = capped; 
+        }
+    }
 });
 
 document.getElementById('input-tax-rate').addEventListener('input', (e) => {

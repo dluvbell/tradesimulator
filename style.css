@@ -208,6 +208,27 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
     margin-bottom: 0;
 }
 
+/* 신규: FAIL 메시지 스타일 */
+.fail-text {
+    color: var(--danger);
+    font-size: 4rem;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid var(--danger);
+    border-radius: 10px;
+    padding: 30px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { transform: scale(1.02); box-shadow: 0 0 20px 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
 @media (max-width: 768px) {
     .top-dashboard {
         grid-template-columns: 1fr; 
@@ -232,5 +253,9 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .input-row {
         flex-wrap: wrap; 
+    }
+    
+    .fail-text {
+        font-size: 2.5rem;
     }
 }

@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Market Investment Simulation</title>
+    <title>S&P 500 3x Leverage Simulation</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📈 Wealth Management Simulation</h1>
-            <p>Test your investment strategy in a 60-year market.</p>
+            <h1>📈 3x Leverage Wealth Management</h1>
+            <p>Test your investment strategy in a 60-year 3x Leveraged S&P 500 market.</p>
         </header>
 
         <div id="setup-screen" class="card">
@@ -71,7 +71,7 @@
 
                     <div class="card trade-controls">
                         <h3>Manual Trading</h3>
-                        <p class="max-shares-text">Max Affordable: <strong id="display-max-shares">0</strong> shares</p>
+                        <p class="max-shares-text">Max Affordable (Current Cash): <strong id="display-max-shares">0</strong> shares</p>
                         <div class="input-row">
                             <input type="number" id="trade-qty" placeholder="Quantity" min="1">
                             <button id="btn-buy" class="buy-btn">Buy</button>
@@ -83,13 +83,23 @@
                         <h3>Automated Strategy</h3>
                         <div class="toggle-group">
                             <label>
-                                <input type="checkbox" id="toggle-dca"> 
-                                <strong>Annual Deposit & Auto-Buy (DCA)</strong>
+                                <input type="checkbox" id="toggle-savings"> 
+                                <strong>Annual Savings (Add Cash)</strong>
+                            </label>
+                            <input type="number" id="input-savings-amount" placeholder="Amount ($)" disabled>
+                            <small class="note">* Injects cash into your account every year.</small>
+                        </div>
+                        <div class="toggle-group">
+                            <label>
+                                <input type="checkbox" id="toggle-dca" disabled> 
+                                <strong>Annual Auto-Buy (DCA)</strong>
                             </label>
                             <input type="number" id="input-dca-amount" placeholder="Amount ($)" disabled>
-                            <small class="note">* Injects external cash & buys shares automatically.</small>
+                            <small class="note">* Buys shares from Savings. Cannot exceed Savings.</small>
                         </div>
-                    </div> <button id="btn-auto-play" class="auto-play-btn">▶▶ Start Auto-Play (No Pause)</button>
+                    </div> 
+
+                    <button id="btn-auto-play" class="auto-play-btn">▶▶ Start Auto-Play (No Pause)</button>
 
                     <div id="progress-container" class="hidden">
                         <div class="progress-track">
@@ -102,6 +112,10 @@
                 </div>
 
                 <div class="chart-container">
+                    <div id="fail-message" class="hidden fail-text">
+                        FAIL<br><span style="font-size: 1.5rem; letter-spacing: 0px; opacity: 0.8;">Fund Wiped Out (Price ≤ 0)</span>
+                    </div>
+                    
                     <div class="chart-panel card">
                         <canvas id="assetChart"></canvas>
                     </div>
