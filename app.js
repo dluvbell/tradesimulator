@@ -135,7 +135,7 @@ let sim = null;
 let assetChart = null;
 let priceChart = null;
 
-const YEAR_DURATION_MS = 20000;
+const YEAR_DURATION_MS = 10000;
 const TICK_INTERVAL_MS = 100;
 let autoPlayActive = false;
 let autoPlayTickInterval = null;
@@ -325,7 +325,7 @@ document.getElementById('btn-restart').addEventListener('click', () => {
     document.getElementById('input-dca-amount').value = '';
     document.getElementById('input-dca-amount').disabled = true;
 
-    document.getElementById('progress-label').textContent = '20 seconds until next year';
+    document.getElementById('progress-label').textContent = '10 seconds until next year';
 
     if (assetChart) assetChart.destroy();
     if (priceChart) priceChart.destroy();
