@@ -61,9 +61,9 @@ class MarketSimulator:
 
         if self.cash >= total_cost and shares_to_buy > 0:
             self.cash -= total_cost
-            total_invested = (self.shares * self.averageCost) + (shares_to_buy * price)
+            total_invested = (self.shares * self.average_cost) + (shares_to_buy * price)
             self.shares += shares_to_buy
-            self.averageCost = total_invested / self.shares
+            self.average_cost = total_invested / self.shares
             return True
         return False
 
