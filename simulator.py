@@ -1,10 +1,10 @@
 import math
 
-NASDAQ_DATA = [114, 133, 92, 59, 77, 97, 105, 117, 151, 202, 195, 232, 278, 247, 324, 348, 330, 381, 454, 373, 586, 676, 776, 751, 1052, 1291, 1570, 2192, 4069, 2470, 1950, 1335, 2003, 2175, 2205, 2415, 2652, 1577, 2269, 2652, 2605, 3019, 4176, 4736, 5007, 5383, 6903, 6635, 8972, 12888, 15644, 10466, 15011, 16512, 18163, 19979, 21977, 24174, 26591, 29250, 32175]
+RANDOM_DATA = [114, 133, 92, 59, 77, 97, 105, 117, 151, 202, 195, 232, 278, 247, 324, 348, 330, 381, 454, 373, 586, 676, 776, 751, 1052, 1291, 1570, 2192, 4069, 2470, 1950, 1335, 2003, 2175, 2205, 2415, 2652, 1577, 2269, 2652, 2605, 3019, 4176, 4736, 5007, 5383, 6903, 6635, 8972, 12888, 15644, 10466, 15011, 16512, 18163, 19979, 21977, 24174, 26591, 29250, 32175]
 MARKET_DATA = [100.0]
 
-for i in range(1, len(NASDAQ_DATA)):
-    pct_change = (NASDAQ_DATA[i] - NASDAQ_DATA[i-1]) / NASDAQ_DATA[i-1]
+for i in range(1, len(RANDOM_DATA)):
+    pct_change = (RANDOM_DATA[i] - RANDOM_DATA[i-1]) / RANDOM_DATA[i-1]
     next_price = MARKET_DATA[-1] * (1 + pct_change)
     if next_price <= 0:
         next_price = 0.0
@@ -61,9 +61,9 @@ class MarketSimulator:
 
         if self.cash >= total_cost and shares_to_buy > 0:
             self.cash -= total_cost
-            total_invested = (self.shares * self.average_cost) + (shares_to_buy * price)
+            total_invested = (self.shares * self.averageCost) + (shares_to_buy * price)
             self.shares += shares_to_buy
-            self.average_cost = total_invested / self.shares
+            self.averageCost = total_invested / self.shares
             return True
         return False
 
@@ -102,7 +102,6 @@ class MarketSimulator:
             self.cash += self.savings_amount
 
         if self.auto_dca_active and self.auto_dca_amount > 0:
-            # 수정 1: 백엔드에서도 DCA 금액은 철저히 이번 SavingsAmount 이내로 차단
             dca_cap = min(self.auto_dca_amount, self.savings_amount)
             available_to_invest = min(dca_cap, self.cash)
             

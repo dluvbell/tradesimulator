@@ -1,8 +1,8 @@
-const nasdaqData = [114, 133, 92, 59, 77, 97, 105, 117, 151, 202, 195, 232, 278, 247, 324, 348, 330, 381, 454, 373, 586, 676, 776, 751, 1052, 1291, 1570, 2192, 4069, 2470, 1950, 1335, 2003, 2175, 2205, 2415, 2652, 1577, 2269, 2652, 2605, 3019, 4176, 4736, 5007, 5383, 6903, 6635, 8972, 12888, 15644, 10466, 15011, 16512, 18163, 19979, 21977, 24174, 26591, 29250, 32175];
+const randomData = [114, 133, 92, 59, 77, 97, 105, 117, 151, 202, 195, 232, 278, 247, 324, 348, 330, 381, 454, 373, 586, 676, 776, 751, 1052, 1291, 1570, 2192, 4069, 2470, 1950, 1335, 2003, 2175, 2205, 2415, 2652, 1577, 2269, 2652, 2605, 3019, 4176, 4736, 5007, 5383, 6903, 6635, 8972, 12888, 15644, 10466, 15011, 16512, 18163, 19979, 21977, 24174, 26591, 29250, 32175];
 const marketData = [100.00];
 
-for (let i = 1; i < nasdaqData.length; i++) {
-    const pctChange = (nasdaqData[i] - nasdaqData[i-1]) / nasdaqData[i-1];
+for (let i = 1; i < randomData.length; i++) {
+    const pctChange = (randomData[i] - randomData[i-1]) / randomData[i-1];
     let nextPrice = marketData[i-1] * (1 + pctChange);
     if (nextPrice <= 0) nextPrice = 0;
     marketData.push(nextPrice);
@@ -406,11 +406,9 @@ document.getElementById('input-savings-amount').addEventListener('input', (e) =>
         sim.savingsAmount = val;
         if (sim.autoDcaAmount > val) {
             sim.autoDcaAmount = val;
-            // 0일 경우 빈칸으로 표시하여 UX 통일
             document.getElementById('input-dca-amount').value = val === 0 ? '' : val;
         }
 
-        // 최종 반영: Savings가 0(또는 빈칸)이 되었을 때 DCA 켜져있으면 강제 종료 및 UI 리셋
         if (val === 0 && sim.autoDcaActive) {
             document.getElementById('toggle-dca').checked = false;
             document.getElementById('input-dca-amount').disabled = true;
