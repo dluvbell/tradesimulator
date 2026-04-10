@@ -21,6 +21,7 @@ class MarketSimulator:
         
         self.tax_rate = 0.15
         self.trading_fee = 10.0
+        self.inflation_rate = 0.03
         
         self.savings_active = False
         self.savings_amount = 0.0
@@ -37,12 +38,18 @@ class MarketSimulator:
 
     def get_total_value(self):
         return self.cash + (self.shares * self.get_current_price())
+
+    def get_real_value(self):
+        return self.get_total_value() / math.pow(1 + self.inflation_rate, self.current_year_index)
         
     def set_tax_rate(self, rate_percent):
         self.tax_rate = rate_percent / 100.0
         
     def set_trading_fee(self, fee):
         self.trading_fee = float(fee)
+
+    def set_inflation_rate(self, rate_percent):
+        self.inflation_rate = rate_percent / 100.0
 
     def set_savings(self, active, amount):
         self.savings_active = active

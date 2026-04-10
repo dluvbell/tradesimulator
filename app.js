@@ -21,6 +21,7 @@ class MarketSimulator {
         
         this.taxRate = 0.15;
         this.tradingFee = 10;
+        this.inflationRate = 0.03;
 
         this.savingsActive = false;
         this.savingsAmount = 0;
@@ -39,10 +40,12 @@ class MarketSimulator {
 
     getCurrentPrice() { return marketData[this.currentYearIndex]; }
     getTotalValue() { return this.cash + (this.shares * this.getCurrentPrice()); }
+    getRealValue() { return this.getTotalValue() / Math.pow(1 + this.inflationRate, this.currentYearIndex); }
     getYearLabel() { return `Year ${this.currentYearIndex + 1}`; }
 
     setTaxRate(ratePercent) { this.taxRate = ratePercent / 100; }
     setTradingFee(fee) { this.tradingFee = fee; }
+    setInflationRate(ratePercent) { this.inflationRate = ratePercent / 100; }
 
     buy(sharesToBuy) {
         if (this.isFailed) return false;
@@ -144,6 +147,7 @@ function updateUI() {
     document.getElementById('display-year').innerText = sim.getYearLabel();
     document.getElementById('display-price').innerText = formatMoney(sim.getCurrentPrice());
     document.getElementById('display-total').innerText = formatMoney(sim.getTotalValue());
+    document.getElementById('display-real-total').innerText = `(Real: ${formatMoney(sim.getRealValue())})`;
     document.getElementById('display-cash').innerText = formatMoney(sim.cash);
     document.getElementById('display-shares').innerText = `${sim.shares}`;
     document.getElementById('display-avg-cost').innerText = formatMoney(sim.averageCost);
@@ -229,6 +233,7 @@ function startAutoPlay() {
     
     document.getElementById('input-tax-rate').disabled = true;
     document.getElementById('input-trading-fee').disabled = true;
+    document.getElementById('input-inflation-rate').disabled = true;
     
     const progressContainer = document.getElementById('progress-container');
     const progressTrack = document.querySelector('.progress-track');
@@ -305,6 +310,7 @@ document.getElementById('btn-restart').addEventListener('click', () => {
     
     document.getElementById('input-tax-rate').disabled = false;
     document.getElementById('input-trading-fee').disabled = false;
+    document.getElementById('input-inflation-rate').disabled = false;
     document.getElementById('btn-buy').disabled = false;
     document.getElementById('btn-sell').disabled = false;
     document.getElementById('progress-bar').style.width = '0%';
@@ -339,12 +345,17 @@ document.getElementById('btn-start').addEventListener('click', () => {
     const rawFee = parseFloat(document.getElementById('setup-trading-fee').value);
     const initialFee = isNaN(rawFee) ? 10 : Math.max(0, rawFee);
 
+    const rawInf = parseFloat(document.getElementById('setup-inflation-rate').value);
+    const initialInf = isNaN(rawInf) ? 3 : Math.max(0, rawInf);
+
     sim = new MarketSimulator(initialCash);
     sim.setTaxRate(initialTax);
     sim.setTradingFee(initialFee);
+    sim.setInflationRate(initialInf);
     
     document.getElementById('input-tax-rate').value = initialTax;
     document.getElementById('input-trading-fee').value = initialFee;
+    document.getElementById('input-inflation-rate').value = initialInf;
     
     document.getElementById('setup-screen').classList.add('hidden');
     document.getElementById('dashboard-screen').classList.remove('hidden');
@@ -448,6 +459,14 @@ document.getElementById('input-trading-fee').addEventListener('input', (e) => {
     if (sim && !autoPlayActive) {
         const parsed = parseFloat(e.target.value);
         sim.setTradingFee(isNaN(parsed) ? 10 : Math.max(0, parsed));
+        updateUI(); 
+    }
+});
+
+document.getElementById('input-inflation-rate').addEventListener('input', (e) => {
+    if (sim && !autoPlayActive) {
+        const parsed = parseFloat(e.target.value);
+        sim.setInflationRate(isNaN(parsed) ? 3 : Math.max(0, parsed));
         updateUI(); 
     }
 });

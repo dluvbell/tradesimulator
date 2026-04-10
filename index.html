@@ -28,6 +28,10 @@
                 <label for="setup-trading-fee">Trading Fee ($):</label>
                 <input type="number" id="setup-trading-fee" value="10" min="0">
             </div>
+            <div class="input-group">
+                <label for="setup-inflation-rate">Inflation Rate (%):</label>
+                <input type="number" id="setup-inflation-rate" value="3" min="0" max="100">
+            </div>
             <button id="btn-start" class="primary-btn" style="margin-top: 15px;">Start</button>
         </div>
 
@@ -44,6 +48,7 @@
                 <div class="stat-card">
                     <h3>Total Asset Value</h3>
                     <div id="display-total" class="stat-value">$0</div>
+                    <div id="display-real-total" style="font-size: 0.9rem; color: #94a3b8; margin-top: 5px;">(Real: $0)</div>
                 </div>
             </div>
 
@@ -65,6 +70,9 @@
                             </label>
                             <label>Trading Fee ($): 
                                 <input type="number" id="input-trading-fee" value="10" min="0">
+                            </label>
+                            <label>Inflation (%): 
+                                <input type="number" id="input-inflation-rate" value="3" min="0" max="100">
                             </label>
                         </div>
                     </div>
